@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from ...authentication import get_username_from_token
-from ... import pulumi
-from ... import users
+from app.authentication import get_username_from_token
+from app import pulumi
+from app import users
 
 router = APIRouter()
 

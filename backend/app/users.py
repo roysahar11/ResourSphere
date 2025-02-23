@@ -20,15 +20,17 @@ class Permissions(BaseModel):
     ec2_instance_types: list[str] = Field(default_factory=list)
     ami_choice: dict[str, str] = Field(default_factory=dict)
 
+def get_user(username):
+    return users_db.get(username)
 
 def get_user_permissions(username):
     user = users_db.get(username)
     permissions = {}
-    if not user:
-        return None
-    else:
-        user_group = user.get("group")
-        if user_group:
-            permissions.update(user_group.get("permissions", {}))
-        permissions.update(user.get("permissions", {}))
+    # if not user:
+    #     return None
+    # else:
+    user_group = user.get("group")
+    if user_group:
+        permissions.update(groups.get(user_group, {}).get("permissions", {}))
+    permissions.update(user.get("permissions", {}))
     return Permissions(**permissions)

@@ -1,22 +1,22 @@
-from ..auth import (
+from app.authentication import (
     save_local_user,
     load_local_user,
     export_login_to_env,
     get_token_from_env,
     get_user_from_env,
-    login_request,
+    send_login_request,
     refresh_token_request,
-    whoami_request,
+    # whoami_request,
 )
 import typer
 from typing import Optional
 import os
 import getpass
 
-auth_commands = typer.Typer()
+auth_cmd = typer.Typer()
 
 
-@auth_commands.command("login")
+@auth_cmd.command("login")
 def login(
     user: Optional[str] = typer.Option(
         None, "-u", "--user", help="Username for login"),
@@ -34,14 +34,15 @@ def login(
 
     password = getpass.getpass("Enter your password: ")
     typer.echo(f"Logging in as {user}...")
-    token = login_request(user, password)
+    login_response = send_login_request(user, password)
+    token = login_response.get("access_token")
     if token:
         export_login_to_env(token, user)
         if not one_time:
             save_local_user(user)
         typer.echo("Login successful!")
     else:
-        typer.echo("Login failed (No token recieved from the server.)")
+        typer.echo("Login failed (No token recieved from the server).")
 
 
 # @auth_commands.command("status")
@@ -61,7 +62,7 @@ def login(
 #         typer.echo("Failed to retrieve user info.")
 
 
-@auth_commands.command("logout")
+@auth_cmd.command("logout")
 def logout():
     """
     Log out and clear stored credentials.
@@ -73,7 +74,7 @@ def logout():
     typer.echo("Logged out successfully.")
 
 
-@auth_commands.command("refresh")
+@auth_cmd.command("refresh")
 def refresh():
     """
     Refresh the access token.

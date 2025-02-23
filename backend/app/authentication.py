@@ -2,7 +2,8 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-import jwt, config, users
+import jwt
+from app import config, users
 
 # Initialize Passlib's context for bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -34,7 +35,7 @@ def generate_access_token(username: str):
     expiration_delta = timedelta(
         minutes=config.ACCESS_TOKEN_EXPIRATION_MINUTES)
     expires_at = datetime.now() + expiration_delta
-    data = {"username": username, "permissions": users.get_user_permissions(username), "exp": expires_at}
+    data = {"username": username, "exp": expires_at}
     encoded_token = jwt.encode(data, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
     return encoded_token

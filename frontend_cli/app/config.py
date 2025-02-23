@@ -1,3 +1,5 @@
+import os
+
 CLI_VERSION = "0.0.1"
 BACKEND_URL = "http://localhost:8000"
 TOKEN_ENV_VAR = "RESOURSPHERE_TOKEN"

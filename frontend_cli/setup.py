@@ -17,7 +17,7 @@ setup(
     install_requires=read_requirements(),
     entry_points={
         "console_scripts": [
-            "resoursphere=app.main:resoursphere_client",
+            "resoursphere=app.main:resoursphere_cmd",
         ],
     },
     author="Roy Sahar",
