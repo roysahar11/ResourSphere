@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pulumi
+pyyaml
+pydantic
+passlib
+PyJWT
+bcrypt

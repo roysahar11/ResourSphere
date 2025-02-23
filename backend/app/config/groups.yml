@@ -1,0 +1,10 @@
+---
+- name: developers
+  permissions:
+    ec2_max_running: 2
+    ec2_instance_types:
+      - t3.nano
+      - t4g.nano
+    ami_choice:
+      ubuntu: ""
+      amazon: ""
