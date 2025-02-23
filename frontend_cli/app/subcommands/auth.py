@@ -74,20 +74,20 @@ def logout():
     typer.echo("Logged out successfully.")
 
 
-@auth_cmd.command("refresh")
-def refresh():
-    """
-    Refresh the access token.
-    """
-    token = get_token_from_env()
-    if not token:
-        typer.echo("No token available. Please log in first.")
-        raise typer.Exit()
+# @auth_cmd.command("refresh")
+# def refresh():
+#     """
+#     Refresh the access token.
+#     """
+#     token = get_token_from_env()
+#     if not token:
+#         typer.echo("No token available. Please log in first.")
+#         raise typer.Exit()
 
-    new_token = refresh_token_request(token)
-    if new_token:
-        user = os.environ.get("RESOURSPHERE_USER", "unknown")
-        export_login_to_env(new_token, user)
-        typer.echo("Token refreshed successfully!")
-    else:
-        typer.echo("Token refresh failed.")
+#     new_token = refresh_token_request(token)
+#     if new_token:
+#         user = os.environ.get("RESOURSPHERE_USER", "unknown")
+#         export_login_to_env(new_token, user)
+#         typer.echo("Token refreshed successfully!")
+#     else:
+#         typer.echo("Token refresh failed.")
