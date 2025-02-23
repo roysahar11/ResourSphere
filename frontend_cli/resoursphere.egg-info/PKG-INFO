@@ -1,0 +1,11 @@
+Metadata-Version: 2.2
+Name: resoursphere
+Version: 0.1.0
+Summary: CLI tool to manage AWS resources
+Author: Roy Sahar
+Requires-Python: >=3.7
+Requires-Dist: typer
+Dynamic: author
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

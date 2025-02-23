@@ -1,0 +1,2 @@
+[console_scripts]
+resoursphere = app.main:resoursphere_client

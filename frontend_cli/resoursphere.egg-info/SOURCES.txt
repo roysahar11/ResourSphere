@@ -1,0 +1,11 @@
+setup.py
+app/__init__.py
+app/auth.py
+app/config.py
+app/main.py
+resoursphere.egg-info/PKG-INFO
+resoursphere.egg-info/SOURCES.txt
+resoursphere.egg-info/dependency_links.txt
+resoursphere.egg-info/entry_points.txt
+resoursphere.egg-info/requires.txt
+resoursphere.egg-info/top_level.txt
