@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from datetime import timedelta
+from datetime import timedelta, datetime
 from app.authentication import verify_password, generate_access_token
 from app import users, config
 
@@ -15,6 +15,7 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     access_token: str
     token_type: str
+    expires_at_utc: datetime
     user_permissions: dict
 
 
@@ -35,10 +36,11 @@ async def login(login_req: LoginRequest):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect username or password"
             )
-
+        token = generate_access_token(username)
         return {
-            "access_token": generate_access_token(username),
+            "access_token": token.get("token"),
             "token_type": "bearer",
+            "expires_at_utc": token.get("expires_at_utc"),
             "user_permissions": users.get_user_permissions(username).model_dump()
         }
 

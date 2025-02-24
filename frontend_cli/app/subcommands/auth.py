@@ -1,48 +1,43 @@
 from app.authentication import (
-    save_local_user,
-    load_local_user,
-    export_login_to_env,
-    get_token_from_env,
-    get_user_from_env,
+    save_login_token,
+    get_saved_token,
     send_login_request,
     refresh_token_request,
+    prompt_for_credentials_and_login,
+    logout,
     # whoami_request,
 )
 import typer
 from typing import Optional
 import os
 import getpass
+from app import config
 
 auth_cmd = typer.Typer()
 
 
 @auth_cmd.command("login")
-def login(
+def login_cmd(
     user: Optional[str] = typer.Option(
         None, "-u", "--user", help="Username for login"),
     one_time: bool = typer.Option(
         False, "-o", help="One-time login (do not save credentials)")
 ):
-    """
-    Log in interactively.
+    prompt_for_credentials_and_login(user, one_time)
+    # if not user:
+    #     user = typer.prompt("Enter your username: ")
 
-    If no username is provided (or stored locally), you'll be prompted.
-    The password is securely entered. You can choose to save your username locally.
-    """
-    if not user:
-        user = typer.prompt("Enter your username: ")
-
-    password = getpass.getpass("Enter your password: ")
-    typer.echo(f"Logging in as {user}...")
-    login_response = send_login_request(user, password)
-    token = login_response.get("access_token")
-    if token:
-        export_login_to_env(token, user)
-        if not one_time:
-            save_local_user(user)
-        typer.echo("Login successful!")
-    else:
-        typer.echo("Login failed (No token recieved from the server).")
+    # password = getpass.getpass("Enter your password: ")
+    # typer.echo(f"Logging in as {user}...")
+    # login_response = send_login_request(user, password)
+    # token = login_response.get("access_token")
+    # if token:
+    #     export_login_to_env(token, user)
+    #     if not one_time:
+    #         save_local_user(user)
+    #     typer.echo("Login successful!")
+    # else:
+    #     typer.echo("Login failed (No token recieved from the server).")
 
 
 # @auth_commands.command("status")
@@ -63,15 +58,18 @@ def login(
 
 
 @auth_cmd.command("logout")
-def logout():
+def logout_cmd():
     """
     Log out and clear stored credentials.
     """
-    os.environ.pop("RESOURSPHERE_TOKEN", None)
-    os.environ.pop("RESOURSPHERE_USER", None)
-    if os.path.exists(os.path.expanduser("~/.resoursphere_user")):
-        os.remove(os.path.expanduser("~/.resoursphere_user"))
-    typer.echo("Logged out successfully.")
+    logout()
+    # os.environ.pop("RESOURSPHERE_TOKEN", None)
+    # os.environ.pop("RESOURSPHERE_USER", None)
+    # if os.path.exists(config.LOCAL_USER_FILE):
+    #     os.remove(config.LOCAL_USER_FILE)
+    # if os.path.exists(config.LOCAL_TOKEN_FILE):
+    #     os.remove(config.LOCAL_TOKEN_FILE)
+    # typer.echo("Logged out successfully.")
 
 
 # @auth_cmd.command("refresh")

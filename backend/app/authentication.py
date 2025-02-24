@@ -1,7 +1,7 @@
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 from app import config, users
 
@@ -34,11 +34,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def generate_access_token(username: str):
     expiration_delta = timedelta(
         minutes=config.ACCESS_TOKEN_EXPIRATION_MINUTES)
-    expires_at = datetime.now() + expiration_delta
-    data = {"username": username, "exp": expires_at}
-    encoded_token = jwt.encode(data, JWT_SECRET_KEY, algorithm=ALGORITHM)
+    expires_at_utc = datetime.now(timezone.utc) + expiration_delta
+    data = {"username": username, "exp": expires_at_utc}
+    token = jwt.encode(data, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
-    return encoded_token
+    return {"token": token, "expires_at_utc": expires_at_utc}
 
 def get_username_from_token(token: str = Depends(oauth2_scheme)) -> str:
     try:

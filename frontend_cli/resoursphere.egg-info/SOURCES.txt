@@ -1,8 +1,10 @@
 setup.py
 app/__init__.py
-app/auth.py
+app/authorization.py
 app/config.py
 app/main.py
+app/subcommands/__init__.py
+app/subcommands/auth.py
 resoursphere.egg-info/PKG-INFO
 resoursphere.egg-info/SOURCES.txt
 resoursphere.egg-info/dependency_links.txt
