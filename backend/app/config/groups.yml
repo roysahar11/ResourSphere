@@ -1,10 +1,12 @@
 ---
 developers:
   permissions:
-    ec2_max_running: 2
+    ec2_max_running: 3
     ec2_instance_types:
       - t3.nano
       - t4g.nano
     ami_choice:
-      ubuntu: ""
-      amazon: ""
+      ubuntu-x86: "ami-04b4f1a9cf54c11d0"
+      amazon-x86: "ami-053a45fff0a704a47"
+      ubuntu-arm: "ami-0a7a4e87939439934"
+      amazon-arm: "ami-0f37c4a1ba152af46"

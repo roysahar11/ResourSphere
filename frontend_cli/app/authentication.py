@@ -85,7 +85,7 @@ def prompt_for_credentials_and_login(user=None, one_time=False) -> str:
         typer.echo("Login failed (No token recieved from the server).")
         raise typer.Exit()
 
-def get_authentication_header():
+def generate_authentication_header():
     token = get_saved_token()
     if token:
         return {"Authorization": f"Bearer {token}"}
