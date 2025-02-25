@@ -4,6 +4,7 @@ import typer
 from app.subcommands.auth import auth_cmd
 from app.subcommands.debug import debug_cmd
 from app.subcommands.ec2 import ec2_cmd
+from app.subcommands.s3 import s3_cmd
 from app.authentication import get_saved_token, get_logged_in_user
 from app import config
 
@@ -12,6 +13,7 @@ resoursphere_cmd = typer.Typer()
 resoursphere_cmd.add_typer(auth_cmd, name="auth")
 resoursphere_cmd.add_typer(debug_cmd, name="debug")
 resoursphere_cmd.add_typer(ec2_cmd, name="ec2")
+resoursphere_cmd.add_typer(s3_cmd, name="s3")
 
 @resoursphere_cmd.callback(invoke_without_command=True)
 def main(ctx: typer.Context):

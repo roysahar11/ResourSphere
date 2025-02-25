@@ -189,14 +189,17 @@ def stop_ec2_instance(instance_id: str) -> dict:
                 detail=f"API Error: {e}"
             )
 
+def construct_bucket_url(bucket_name: str) -> str:
+    return f"https://{bucket_name}.s3.amazonaws.com"
+
 def create_s3_bucket(name: str, user: str, public: bool = False) -> dict:
     try:
         # Create the S3 bucket
         response = s3.create_bucket(
             Bucket=name,
-            CreateBucketConfiguration={
-                'LocationConstraint': DEFAULT_REGION
-            }
+            # CreateBucketConfiguration={
+            #     'LocationConstraint': DEFAULT_REGION
+            # }
         )
         
         # Add tags to the bucket
@@ -219,6 +222,18 @@ def create_s3_bucket(name: str, user: str, public: bool = False) -> dict:
         
         # If public access is requested, update the bucket policy
         if public:
+            # Remove Block Public Access settings
+            s3.put_public_access_block(
+                Bucket=name,
+                PublicAccessBlockConfiguration={
+                    'BlockPublicAcls': False,
+                    'IgnorePublicAcls': False,
+                    'BlockPublicPolicy': False,
+                    'RestrictPublicBuckets': False
+                }
+            )
+            
+            # Apply a public bucket policy
             bucket_policy = {
                 "Version": "2012-10-17",
                 "Statement": [
@@ -234,41 +249,62 @@ def create_s3_bucket(name: str, user: str, public: bool = False) -> dict:
             s3.put_bucket_policy(
                 Bucket=name,
                 Policy=json.dumps(bucket_policy)
-            )
+            )        
+        # Wait until the bucket exists and is accessible
+        waiter = s3.get_waiter('bucket_exists')
+        waiter.wait(Bucket=name)
         
         return {
             "bucket_name": name,
             "status": "created",
+            "bucket_url": construct_bucket_url(name)
         }
-    except s3.exceptions.BucketAlreadyExists as e:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Bucket {name} already exists"
-        )
     except s3.exceptions.ClientError as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"API Error: {e}"
-        )
-    
-def get_s3_buckets_for_user(user: str) -> list[dict]:
-    filters = [
-        {
-            'Name': 'tag:Owner',
-            'Values': [user]
-        },  
-        {
-            'Name': 'tag:ManagedBy',
-            'Values': ['ResourSphere']
-        }
-    ]
-    
-    response = s3.list_buckets(Filters=filters)
+        error_code = e.response['Error']['Code']
+        if error_code == 'BucketAlreadyExists' or error_code == 'BucketAlreadyOwnedByYou':
+            raise HTTPException(
+                status_code=409,
+                detail=f"Bucket {name} already exists"
+            )
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"API Error: {e}"
+            )
+
+
+def get_s3_buckets(user: str = None) -> list[dict]:
+    # Get all buckets first
+    response = s3.list_buckets()
     
     buckets = []
     for bucket in response['Buckets']:
-        bucket_description = {"name": bucket['Name']}
-        buckets.append(bucket_description)
+        try:
+            # Get tags for each bucket
+            tags = s3.get_bucket_tagging(Bucket=bucket['Name'])['TagSet']
+            
+            # Check if bucket matches our filters
+            managed_by_resoursphere = False
+            owned_by_user = False
+            
+            for tag in tags:
+                if tag['Key'] == 'ManagedBy' and tag['Value'] == 'ResourSphere':
+                    managed_by_resoursphere = True
+                if tag['Key'] == 'Owner' and tag['Value'] == user:
+                    owned_by_user = True
+            
+            # Only include bucket if it matches our filters
+            if managed_by_resoursphere and (not user or owned_by_user):
+                bucket_description = {
+                    "name": bucket['Name'],
+                    "url": construct_bucket_url(bucket['Name'])
+                }
+                buckets.append(bucket_description)
+                
+        except s3.exceptions.ClientError as e:
+            # Skip buckets where we can't read tags
+            continue
+            
     return buckets
 
 def delete_s3_bucket(bucket_name: str) -> dict:

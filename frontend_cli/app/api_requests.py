@@ -1,5 +1,6 @@
 import requests
 import typer
+import json
 from app import config
 # from app.authentication import get_logged_in_user
 base_url = config.BACKEND_URL
@@ -142,6 +143,43 @@ def send_ec2_stop_request(authentication_header: dict, instance_id: str) -> dict
     except Exception as e:
         if not isinstance(e, typer.Exit):
             typer.echo(f"Error requesting EC2 stop (client side): {e}")
+            raise typer.Exit()
+        else:
+            raise e
+
+def send_s3_create_request(
+        authentication_header: dict, name: str, public: bool=False
+) -> dict:
+    url = f"{base_url}/s3/create"
+    try:
+        api_response = requests.post(url, headers=authentication_header, json={
+            "bucket_name": name,
+            "public_access": public
+        })
+        # Debug output
+        # typer.echo(f"Response status code: {api_response.status_code}")
+        # typer.echo(f"Response content: {api_response.text}")
+        
+        if api_response.status_code == 200:
+            try:
+                data = api_response.json()
+                return data
+            except json.JSONDecodeError:
+                typer.echo("Error: Received invalid JSON response from server")
+                raise typer.Exit()
+        elif api_response.status_code == 409:
+            typer.echo(f"Error: Bucket named '{name}' already exists.")
+            raise typer.Exit()
+        else:
+            typer.echo(f"Error requesting S3 creation: {api_response.text}")
+            typer.echo(f"HTTP Status code: {api_response.status_code}")
+            raise typer.Exit()
+    except requests.exceptions.RequestException as e:
+        typer.echo(f"Network error during S3 creation request: {e}")
+        raise typer.Exit()
+    except Exception as e:
+        if not isinstance(e, typer.Exit):
+            typer.echo(f"Error requesting S3 creation (client side): {e}")
             raise typer.Exit()
         else:
             raise e
