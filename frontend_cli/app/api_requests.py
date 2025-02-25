@@ -26,6 +26,7 @@ def send_login_request(username: str, password: str) -> dict:
         typer.echo(f"Error during login: {e}")
         raise typer.Exit()
     
+
 def send_ec2_create_request(
         authentication_header: dict,
         ami: str,
@@ -103,6 +104,7 @@ def send_ec2_delete_request(authentication_header: dict, instance: str) -> dict:
             raise typer.Exit()
         else:
             raise e
+
 def send_ec2_start_request(authentication_header: dict, instance_id: str) -> dict:
     url = f"{base_url}/ec2/start"
     try:
@@ -146,6 +148,7 @@ def send_ec2_stop_request(authentication_header: dict, instance_id: str) -> dict
             raise typer.Exit()
         else:
             raise e
+
 
 def send_s3_create_request(
         authentication_header: dict, name: str, public: bool=False
@@ -202,7 +205,6 @@ def send_s3_list_request(authentication_header: dict) -> dict:
         else:
             raise e
 
-
 def send_s3_delete_request(
     authentication_header: dict, bucket_name: str
 ) -> dict:
@@ -211,8 +213,8 @@ def send_s3_delete_request(
         response = requests.delete(url, headers=authentication_header, json={
             "bucket_name": bucket_name
         })
+        data = response.json()
         if response.status_code == 200:
-            data = response.json()
             return data
         elif response.status_code == 404:
             typer.echo(
@@ -228,6 +230,31 @@ def send_s3_delete_request(
     except Exception as e:
         if not isinstance(e, typer.Exit):
             typer.echo(f"Error requesting S3 deletion (client side): {e}")
+            raise typer.Exit()
+        else:
+            raise e
+
+def send_s3_upload_request(
+    authentication_header: dict, bucket_name: str, files: dict
+) -> dict:
+    url = f"{base_url}/s3/upload"
+    try:
+        response = requests.post(
+            url,
+            headers=authentication_header,
+            data={"bucket_name": bucket_name},
+            files=files
+        )
+        data = response.json()
+        if response.status_code == 200:
+            return data
+        else:
+            typer.echo(f"Error requesting S3 upload: {data.get('detail')}")
+            typer.echo(f"HTTP Status code: {response.status_code}")
+            raise typer.Exit()
+    except Exception as e:
+        if not isinstance(e, typer.Exit):
+            typer.echo(f"Error requesting S3 upload (client side): {e}")
             raise typer.Exit()
         else:
             raise e

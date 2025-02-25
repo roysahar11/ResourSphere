@@ -1,6 +1,7 @@
 import boto3
 from fastapi import HTTPException
 import json
+from fastapi import File
 
 
 DEFAULT_REGION = "us-east-1"
@@ -10,6 +11,8 @@ boto_session = boto3.Session(
 )
 ec2 = boto_session.client('ec2')
 s3 = boto_session.client('s3')
+route53 = boto_session.client('route53')
+
 DEFAULT_VPC_ID = "vpc-08879d17f5e284b80"
 DEFAULT_SUBNET_ID = "subnet-07d6bb7b15ccc8452"
 
@@ -329,3 +332,69 @@ def delete_s3_bucket(bucket_name: str) -> dict:
             status_code=500,
             detail=f"Error deleting bucket: {e}"
         )
+
+
+def upload_file_to_s3_bucket(bucket_name: str, file: File) -> dict:
+    try:
+        file.file.seek(0)
+        s3.upload_fileobj(file.file, bucket_name, file.filename)
+        return {
+            "bucket_name": bucket_name,
+            "file_name": file.filename,
+            "status": "uploaded"
+        }
+    except s3.exceptions.ClientError as e:
+        raise HTTPException(
+            status_code=500, detail=f"AWS API returned error: {e}"
+        )
+
+
+def create_dns_zone(name: str) -> dict:
+    try:
+        response = route53.create_hosted_zone(
+            Name=name,
+            CallerReference=str(uuid.uuid4())
+        )
+        return {
+            "zone_id": response['HostedZone']['Id'],
+            "name": name,
+            "status": "created"
+        }
+    except route53.exceptions.ClientError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AWS API Error: {e}"
+        )
+
+def create_dns_record(zone_id: str, name: str, type: str, value: str) -> dict:
+    try:
+        response = route53.change_resource_record_sets(
+            HostedZoneId=zone_id,
+            ChangeBatch={
+                'Changes': [
+                    {
+                        'Action': 'CREATE',
+                        'ResourceRecordSet': {
+                            'Name': name,
+                            'Type': type,
+                            'TTL': 300
+                        }
+
+                        'ResourceRecords': [{'Value': value}]
+                    }
+                ]
+            }
+        )
+        return {
+            "zone_id": zone_id,
+            "name": name,
+            "type": type,
+            "value": value,
+            "status": "created"
+        }
+    except route53.exceptions.ClientError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AWS API Error: {e}"
+        )
+

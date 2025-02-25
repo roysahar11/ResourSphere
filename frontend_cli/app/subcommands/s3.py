@@ -1,9 +1,11 @@
 from app.api_requests import (
-    send_s3_create_request, send_s3_list_request, send_s3_delete_request
+    send_s3_create_request, send_s3_list_request, send_s3_delete_request,
+    send_s3_upload_request
 )
 from app.authentication import generate_authentication_header
 import typer
 from typing import Optional
+import os
 
 
 s3_cmd = typer.Typer()
@@ -60,3 +62,21 @@ def s3_delete_cmd(
     typer.echo(f"Requesting deletion of bucket '{bucket_name}'...")
     response = send_s3_delete_request(authentication_header, bucket_name)
     typer.echo(f"Bucket '{response.get('bucket_name')}' deleted successfully.")
+
+@s3_cmd.command("upload")
+def s3_upload_cmd(
+    bucket_name: str = typer.Argument(
+        ..., help="Name of the bucket to upload the file to"
+    ),
+    file: typer.FileBinaryRead = typer.Argument(
+        ..., help="Path to the file to upload"
+    )
+):
+    authentication_header = generate_authentication_header()
+    files = {"file": (os.path.basename(file.name), file)}
+    typer.echo(
+        f"Uploading file to bucket..."
+    )
+    response = send_s3_upload_request(authentication_header, bucket_name, files)
+    typer.echo(f"File '{response.get('file_name')}' uploaded to bucket "
+               f"'{bucket_name}' successfully.")
