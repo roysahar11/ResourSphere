@@ -183,3 +183,51 @@ def send_s3_create_request(
             raise typer.Exit()
         else:
             raise e
+
+def send_s3_list_request(authentication_header: dict) -> dict:
+    url = f"{base_url}/s3/list"
+    try:
+        response = requests.get(url, headers=authentication_header)
+        data = response.json()
+        if response.status_code == 200:
+            return data
+        else:
+            typer.echo(f"Error requesting S3 list: {data.get('detail')}")
+            typer.echo(f"HTTP Status code: {response.status_code}")
+            raise typer.Exit()
+    except Exception as e:
+        if not isinstance(e, typer.Exit):
+            typer.echo(f"Error requesting S3 list (client side): {e}")
+            raise typer.Exit()
+        else:
+            raise e
+
+
+def send_s3_delete_request(
+    authentication_header: dict, bucket_name: str
+) -> dict:
+    url = f"{base_url}/s3/delete"
+    try:
+        response = requests.delete(url, headers=authentication_header, json={
+            "bucket_name": bucket_name
+        })
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        elif response.status_code == 404:
+            typer.echo(
+                f"Bucket {bucket_name} does not exist, or is not owned "
+                "by you (Note: You can only delete buckets "
+                "managed by ResourceSphere)."
+            )
+            raise typer.Exit()
+        else:
+            typer.echo(f"Error requesting S3 deletion: {data.get('detail')}")
+            typer.echo(f"HTTP Status code: {response.status_code}")
+            raise typer.Exit()
+    except Exception as e:
+        if not isinstance(e, typer.Exit):
+            typer.echo(f"Error requesting S3 deletion (client side): {e}")
+            raise typer.Exit()
+        else:
+            raise e

@@ -319,6 +319,11 @@ def delete_s3_bucket(bucket_name: str) -> dict:
             "bucket_name": bucket_name,
             "status": "deleted"
         }
+    except s3.exceptions.NoSuchBucket as e:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Bucket {bucket_name} does not exist."
+        )
     except s3.exceptions.ClientError as e:
         raise HTTPException(
             status_code=500,
