@@ -14,7 +14,7 @@ class S3CreateResponse(BaseModel):
     status: str
     bucket_url: str
 
-@router.post("/s3/create", response_model=S3CreateResponse)
+@router.post("/s3/create", response_model=S3CreateResponse, tags=["s3"])
 async def create_bucket(
     request: S3CreateRequest, username: str = Depends(get_username_from_token)
 ):
