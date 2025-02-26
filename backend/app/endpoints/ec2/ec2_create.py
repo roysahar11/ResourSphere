@@ -22,7 +22,7 @@ def get_running_instances_amount(user: str) -> int:
     instances = cloud_api.get_ec2_instances_by_user(user, state="running")
     return len(instances)
 
-@router.post("/ec2/create", response_model=EC2CreateResponse)
+@router.post("/ec2/create", response_model=EC2CreateResponse, tags=["ec2"])
 async def ec2_create_endpoint(request: EC2CreateRequest,
                         username: str = Depends(get_username_from_token)):
     #Verify the requested instance type and AMI are allowed

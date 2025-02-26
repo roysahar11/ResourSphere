@@ -9,7 +9,7 @@ router = APIRouter()
 class StartInstanceRequest(BaseModel):
     instance: str
 
-@router.post("/ec2/start")
+@router.post("/ec2/start", tags=["ec2"])
 async def ec2_start_endpoint(
     request: StartInstanceRequest,
     username: str = Depends(get_username_from_token)

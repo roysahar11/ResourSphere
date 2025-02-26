@@ -13,7 +13,7 @@ class S3BucketResponse(BaseModel):
 class S3ListResponse(BaseModel):
     buckets: List[S3BucketResponse]
 
-@router.get("/s3/list", response_model=S3ListResponse)
+@router.get("/s3/list", response_model=S3ListResponse, tags=["s3"])
 async def list_buckets(username: str = Depends(get_username_from_token)):
     """
     List all S3 buckets owned by the authenticated user

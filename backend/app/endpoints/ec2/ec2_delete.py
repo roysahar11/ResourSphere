@@ -14,7 +14,9 @@ class DeleteInstanceResponse(BaseModel):
     instance_id: str
     status: str
 
-@router.delete("/ec2/delete", response_model=DeleteInstanceResponse)
+@router.delete(
+        "/ec2/delete", response_model=DeleteInstanceResponse, tags=["ec2"]
+)
 async def ec2_delete_endpoint(
     request: DeleteInstanceRequest,
     username: str = Depends(get_username_from_token)

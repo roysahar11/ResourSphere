@@ -13,7 +13,7 @@ class DeleteBucketResponse(BaseModel):
 
 router = APIRouter()
 
-@router.delete("/s3/delete", response_model=DeleteBucketResponse)
+@router.delete("/s3/delete", response_model=DeleteBucketResponse, tags=["s3"])
 async def s3_delete(
     request: DeleteBucketRequest,
     user: str = Depends(get_username_from_token)

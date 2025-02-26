@@ -2,6 +2,7 @@ import boto3
 from fastapi import HTTPException
 import json
 from fastapi import File
+import uuid
 
 
 DEFAULT_REGION = "us-east-1"
@@ -349,14 +350,38 @@ def upload_file_to_s3_bucket(bucket_name: str, file: File) -> dict:
         )
 
 
-def create_dns_zone(name: str) -> dict:
+def create_dns_zone(name: str, user: str) -> dict:
     try:
+        # Create the hosted zone
         response = route53.create_hosted_zone(
             Name=name,
-            CallerReference=str(uuid.uuid4())
+            CallerReference=str(uuid.uuid4()),
+            HostedZoneConfig={
+                'Comment': 'Managed by ResourSphere',
+            },
         )
+        
+        # Extract the hosted zone ID and remove the prefix
+        zone_id = response['HostedZone']['Id'].split('/')[-1]
+        
+        # Add tags to the hosted zone
+        route53.change_tags_for_resource(
+            ResourceType='hostedzone',
+            ResourceId=zone_id,
+            AddTags=[
+                {
+                    'Key': 'ManagedBy',
+                    'Value': 'ResourSphere'
+                },
+                {
+                    'Key': 'Owner',
+                    'Value': user
+                }
+            ]
+        )
+        
         return {
-            "zone_id": response['HostedZone']['Id'],
+            "zone_id": zone_id,
             "name": name,
             "status": "created"
         }
@@ -366,6 +391,54 @@ def create_dns_zone(name: str) -> dict:
             detail=f"AWS API Error: {e}"
         )
 
+
+def delete_dns_zone(zone_id: str) -> dict:
+    try:
+        route53.delete_hosted_zone(Id=zone_id)
+        return {
+            "zone_id": zone_id,
+            "status": "deleted"
+        }
+    except route53.exceptions.ClientError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AWS API Error: {e}"
+        )
+
+def get_dns_zones_list(user: str=None) -> list[dict]:
+    try:
+        # Get all hosted zones
+        response = route53.list_hosted_zones()
+        zones = []
+        
+        # Process each zone to check tags
+        for zone in response['HostedZones']:
+            zone_id = zone['Id'].split('/')[-1]
+            
+            # Get tags for this zone
+            tags_response = route53.list_tags_for_resource(
+                ResourceType='hostedzone',
+                ResourceId=zone_id
+            )
+            
+            tags = {tag['Key']: tag['Value'] for tag in tags_response['ResourceTagSet']['Tags']}
+            
+            # Check if zone is managed by ResourSphere
+            if tags.get('ManagedBy') == 'ResourSphere':
+                # If user is specified, check owner tag
+                if user is None or tags.get('Owner') == user:
+                    zones.append({
+                        "zone_id": zone_id,
+                        "name": zone['Name'],
+                        # "tags": tags
+                    })
+        
+        return zones
+    except route53.exceptions.ClientError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AWS API Error while asking for list of zones: {e}"
+        )
 def create_dns_record(zone_id: str, name: str, type: str, value: str) -> dict:
     try:
         response = route53.change_resource_record_sets(
@@ -378,7 +451,7 @@ def create_dns_record(zone_id: str, name: str, type: str, value: str) -> dict:
                             'Name': name,
                             'Type': type,
                             'TTL': 300
-                        }
+                        },
 
                         'ResourceRecords': [{'Value': value}]
                     }

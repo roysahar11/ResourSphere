@@ -258,3 +258,62 @@ def send_s3_upload_request(
             raise typer.Exit()
         else:
             raise e
+
+
+def send_dns_zone_create_request(
+    authentication_header: dict, zone_name: str
+) -> dict:
+    url = f"{base_url}/route53/zone/create"
+    try:
+        response = requests.post(url, headers=authentication_header, json={
+            "zone_name": zone_name
+        })
+        data = response.json()
+        if response.status_code == 200:
+            return data
+        else:
+            typer.echo(
+                f"Error requesting DNS zone creation: {data.get('detail')}"
+            )
+            typer.echo(f"HTTP Status code: {response.status_code}")
+            raise typer.Exit()
+    except Exception as e:
+        if not isinstance(e, typer.Exit):
+            typer.echo(f"Error requesting DNS zone creation (client side): {e}")
+            raise typer.Exit()
+        else:
+            raise e
+
+def send_dns_zone_delete_request(
+    authentication_header: dict, zone: str
+) -> dict:
+    url = f"{base_url}/route53/zone/{zone}/delete"
+    try:
+        response = requests.delete(url, headers=authentication_header)
+        data = response.json()
+        if response.status_code == 200:
+            return data
+        else:
+            typer.echo(f"Error deleting DNS zone: {data.get('detail')}")
+            typer.echo(f"HTTP Status code: {response.status_code}")
+            raise typer.Exit()
+    except Exception as e:
+        if not isinstance(e, typer.Exit):
+            typer.echo(f"Error deleting DNS zone (client side): {e}")
+            raise typer.Exit()
+        else:
+            raise e
+
+def send_dns_zone_list_request(authentication_header: dict) -> dict:
+    url = f"{base_url}/route53/zones"
+    try:
+        response = requests.get(url, headers=authentication_header)
+        data = response.json()
+        if response.status_code == 200:
+            return data
+        else:
+            typer.echo(f"Error requesting DNS zone list: {data.get('detail')}")
+            typer.echo(f"HTTP Status code: {response.status_code}")
+            raise typer.Exit()
+    except Exception as e:
+        raise e

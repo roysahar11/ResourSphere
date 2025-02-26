@@ -9,7 +9,7 @@ router = APIRouter()
 class StopInstanceRequest(BaseModel):
     instance: str
 
-@router.post("/ec2/stop")
+@router.post("/ec2/stop", tags=["ec2"])
 async def ec2_stop_endpoint(
     request: StopInstanceRequest,
     username: str = Depends(get_username_from_token)

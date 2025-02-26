@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-@router.get("/ec2/list")
+@router.get("/ec2/list", tags=["ec2"])
 async def ec2_list_endpoint(username: str = Depends(get_username_from_token)):
     try:
         instances = cloud_api.get_ec2_instances_by_user(username)

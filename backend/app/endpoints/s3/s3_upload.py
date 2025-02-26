@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-@router.post("/s3/upload")
+@router.post("/s3/upload", tags=["s3"])
 async def upload_file(
     bucket_name: str = Form(...),
     file: UploadFile = File(...),
