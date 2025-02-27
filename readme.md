@@ -2,7 +2,7 @@
 
 ResourSphere is a comprehensive solution for simplifying AWS resource management in your organization. Consisting of a FastAPI backend service and a command-line interface (CLI) tool, this integrated system allows your developers to easily provision AWS resources as they need, while giving your DevOps team complete control over the process with role-based access control policies.
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/badge/version-0.0.5-blue)
 
 ## 🌟 Features
 
@@ -36,26 +36,20 @@ This separation provides several benefits:
 1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/resoursphere.git
-   cd resoursphere
+   cd resoursphere/backend
    ```
 
-2. Create and activate a virtual environment:
+2. Install the package:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install .
    ```
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Configure AWS credentials:
+3. Configure AWS credentials:
    ```bash
    aws configure --profile resoursphere
    ```
 
-5. Verify configuration files in `app/config`:
+4. Verify configuration files in `app/config`:
    - `users.yml`: User credentials and permissions
    - `groups.yml`: Group definitions and permissions
    - `security.yml`: JWT token configuration

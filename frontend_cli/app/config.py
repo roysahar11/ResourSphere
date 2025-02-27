@@ -4,7 +4,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-CLI_VERSION = "0.0.1"
+CLI_VERSION = "0.0.5"
 BACKEND_URL = "http://localhost:8000"
 TOKEN_ENV_VAR = "RESOURSPHERE_TOKEN"
 USER_ENV_VAR = "RESOURSPHERE_USER"
