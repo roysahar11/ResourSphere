@@ -20,40 +20,89 @@ cd resoursphere/backend
 pip install .
 ```
 
-3. Configure AWS credentials:
-```bash
-aws configure --profile resoursphere
-```
-
 4. Verify configuration files in `app/config` (see instructions ahead ):
 - `users.yml`: User credentials and permissions
 - `groups.yml`: Group definitions and permissions
 - `security.yml`: JWT token configuration
-- `secrets.yml`: Secret keys and passwords
+- `secrets.yml`: Holds a secret jwt key
 
 ## 🛠️ Backend Configuration
 
-### User Configuration
+### 1. AWS Credentials
+You'll need to create an access key for an IAM user that has sufficient permissions to manage the resources you wish to manage with ResourSphere (EC2, S3, and Route53).
+
+Then, run this command to configure the "resousphere" AWS profile on your machine:
+```bash
+aws configure --profile resoursphere
+```
+
+### Secret JWT key
+JWT uses a *secret key* to encode and decode the user access token used for users authentication in API requests.
+
+Choost your own strong key, or you can use _dev/secret_key_generator.py_ for quickly generating a random strong key.
+Then, you can store it in a _secrets.yml_ file in _app/config/_:
+```yaml
+#app/config/secrets.yml
+---
+jwt_secret_key: your-super-strong-key
+```
+
+*Alternatively*, you can use a secrets manager of your choice and retrieve the secret key whe the service starts up. 
+In _app/config.py_, look for the _load_jwt_secret_key()_ function, and modify it to retrieve your secret key:
+```python
+#app/config.py
+def load_jwt_secret_key():
+    secret_key = #code to retrieve your secret key from a secrets manager
+    return secret_key
+```
+
+
+
+### 2. Users, Groups & Permisisons
+Users and groups can be configured in these files:
+- app/config/users.yml
+- app/config/groups.yml
+
+###Permissions/Constraints
+There are currently 3 permissions/constraints you can control using ResourSphere:
+- ec2_max_running: the maximum number of running EC2 instances the user is allowed to have at once (if this limit is reached, ResourSphere will not allow to create or start more EC2 instances)
+- ec2_instance_types: a list of EC2 instance types the user is allowed to create.
+- ami_choice: a dictionary of AMIs that the user is allowed to use when creating an EC2 instance
+
+example of permissions definition for a user/group:
+```yaml
+permissions:
+  ec2_max_running: 3 #An integer number.
+  ec2_instance_types:
+    - t3.nano #Instance type names exactly as they appear in AWS
+    - t4g.nano
+  ami_choice:
+    ubuntu-x86: #include an AMI id, for example: "ami-04b4f1a9cf54c11d0"
+    amazon-x86: #include an AMI id, for example: "ami-04b4f1a9cf54c11d0"
+```
+This _permissions_ dictionary can appear both in user and group definitions, when user-defined permission will always override group permissions. You can specify all of these permissions
+
+#### Defining Groups
+You an *optionaly* define groups to easily manage permissions for multiple users at once.
+
+Group definition example:
+```yaml
+# app/config/groups.yml
+developers:
+  permissions: #A dictionary of permissions
+```
+
+#### Defining Users
+To define a user you currently need to manually hash the password and store it in the configuration file. Run _app/setup/hashing_passwords.py_ to hash the desired password.
+
+User definition example:
 ```yaml
 # app/config/users.yml
 roysahar:
   username: roysahar
-  group: developers
-  password_hash: $2b$12$IRjsxvDUqr1GICJB/sVsb.uOCZDP3YkQk.nD4L618Al7PVXiPo.Fu
-```
-
-### Group Configuration
-```yaml
-# app/config/groups.yml
-developers:
-  permissions:
-    ec2_max_running: 3
-    ec2_instance_types:
-      - t3.nano
-      - t4g.nano
-    ami_choice:
-      ubuntu-x86: "ami-04b4f1a9cf54c11d0"
-      amazon-x86: "ami-053a45fff0a704a47"
+  group: developers #Optional: put the user in a group
+  password_hash: #Hashed password
+  permissions: #An optional dictionary of permissions
 ```
 
 
