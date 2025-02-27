@@ -108,7 +108,7 @@ roysahar:
 
 ## 🚀 Backend API Reference
 
-### Authentication Endpoints
+### Authentication Endpoint
 
 ```
 POST /auth/login
@@ -140,3 +140,10 @@ POST /auth/login
   }
 }
 ```
+
+For additional API documentation, run ResorSphere Backend and visit the automatically generated FastAPI docs at:
+
+- `/docs` - Swagger UI documentation
+- `/redoc` - ReDoc documentation
+
+These interactive documentation pages are automatically generated from the FastAPI code and provide detailed information about all available endpoints, request/response schemas, and authentication requirements.
