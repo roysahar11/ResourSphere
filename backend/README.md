@@ -7,6 +7,17 @@ The backend service is a FastAPI application that directly interfaces with AWS s
 - AWS API abstraction layer
 - Role-based access control
 
+## 📋 Prerequisites
+
+Before installing and running the backend, ensure you have:
+
+1. Python 3.8 or higher installed
+2. pip package manager
+3. AWS account with appropriate permissions
+4. AWS CLI installed and configured
+5. Git installed
+
+
 ## 🔧 Backend Installation
 
 1. Clone the repository:
