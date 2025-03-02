@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import os
 
 
 def read_requirements():
@@ -14,10 +15,16 @@ setup(
     name="resoursphere-backend",
     version="0.0.5",
     packages=find_packages(),
+    package_dir={"": "."},
     install_requires=read_requirements(),
+    include_package_data=True,
+    package_data={
+        "app": ["config/*.yml"],
+        "app.endpoints": ["*/*.py"],
+    },
     entry_points={
         "console_scripts": [
-            "resoursphere-backend=app.main:app",
+            "resoursphere-backend=app.main:run_app",
         ],
     },
     author="Roy Sahar",

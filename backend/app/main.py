@@ -31,5 +31,9 @@ app.include_router(zone_list.router)
 async def root():
     return {"message": "ResourSphere"}
 
+def run_app():
+    """Entry point for the application script"""
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000)
+
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    run_app()
