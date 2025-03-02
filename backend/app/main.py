@@ -1,19 +1,30 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.endpoints.ec2 import (
     ec2_create, ec2_list, ec2_delete, ec2_start, ec2_stop
 )
-from app.endpoints.auth import login
+from app.endpoints.auth import login, me
 from app.endpoints.s3 import s3_create, s3_list, s3_delete, s3_upload
 from app.endpoints.route53 import (
     zone_create, zone_delete, zone_list
 )
 import uvicorn
-
+from app.config import FRONTEND_ORIGINS
 
 app = FastAPI()
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=FRONTEND_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(ec2_create.router)
 app.include_router(login.router)
+app.include_router(me.router)
 app.include_router(ec2_list.router)
 app.include_router(ec2_delete.router)
 app.include_router(ec2_start.router)
